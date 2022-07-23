@@ -4,7 +4,7 @@ import re
 import bs4
 
 
-def save_img_by_station_name(station_name, work_dir='./'):
+def get_img_urls_by_station(station_name):
     """
     下载百度百科图片，并保存到本地
     例: https://baike.baidu.com/item/人民大学站
@@ -20,22 +20,27 @@ def save_img_by_station_name(station_name, work_dir='./'):
     soup = bs4.BeautifulSoup(res.text, 'html.parser')
     imgs = soup.findAll('a', class_='image-link')
 
+    img_urls = []
     for img in imgs:
         img_url = img.find('img').get('data-src').split('?')[0]
-        print(img_url)
+        img_urls.append(img_url)
+    return img_urls
 
-        # save img by img_url to local file at current path
-        img_name = img_url.split('/')[-1][:4]
-        img_name = re.sub(r'[\\/:*?"<>|]', '', img_name)
-        img_name = station_name + '_' + img_name + ".jpg"
-        print(img_name)
 
-        # save to station_name folder if not exist new it
-        save_folder = os.path.join(work_dir, station_name)
-        if not os.path.exists(save_folder):
-            os.mkdir(save_folder)
-        with open(os.path.join(save_folder, img_name), 'wb') as f:
-            f.write(requests.get(img_url).content)
+def request_img(station_name, img_url):
+    # save img by img_url to local file at current path
+    img_name = img_url.split('/')[-1][:4]
+    img_name = re.sub(r'[\\/:*?"<>|]', '', img_name)
+    img_name = station_name + '_' + img_name + ".jpg"
+    return img_name, requests.get(img_url).content
+
+
+def save_img(path, img_name, img_content):
+    # save to station_name folder if not exist new it
+    if not os.path.exists(path):
+        os.mkdir(path)
+    with open(os.path.join(path, img_name), 'wb') as f:
+        f.write(img_content)
 
 if __name__ == '__main__':
-    save_img_by_station_name("北京大学东门站")
+    get_img_urls_by_station("北京大学东门站")
