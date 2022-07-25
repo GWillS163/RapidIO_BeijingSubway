@@ -43,9 +43,19 @@ def _request_img():
 
 def _save_img():
     """还在请求图片时，保持程序不退出"""
+    # find ../data/baike_block_img_list files
+    blocked_list = os.listdir("../data/baike_block_img_list")
+    blocked_folder = os.path.join(save_path, "blocked")
+    # new_blocked_list folder
+    if not os.path.exists("../data/new_baike_block_img_list"):
+        os.mkdir("../data/new_baike_block_img_list")
     # while save_tasks.qsize() > 0:
     while t_req_pics.is_alive():
         line_name, station_name, img_name, img_content = save_tasks.get()
+        if img_name in blocked_list:
+            save_img(blocked_folder, img_name, img_content)
+            print(f"{img_name} is blocked, saved to {blocked_folder}")
+            continue
         save_img(os.path.join(save_path, line_name), img_name, img_content)
         # print(f"save_img:{save_path} {img_name}")
 
@@ -113,3 +123,5 @@ if __name__ == '__main__':
     # t_img_save.join()
     t_print.join()
     print("all done, used time:", time.time() - t_start)
+
+
