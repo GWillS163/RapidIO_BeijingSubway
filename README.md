@@ -19,11 +19,20 @@ data : 存放不同时期的数据 (北京地铁线路的时效性)
 4. 线程3 save_pics: 保存图片到本地
 5. 线程4 _print: 输出信息
 
-## 代码运行情况
-![img_1.png](README_md_files/img_1.png)
+## 代码使用介绍
+### 1.运行 main_GetLatesetInfo/main.py 得到初始数据
+![](README_md_files/903af640-0bdb-11ed-83aa-4564d5d94993.jpeg?v=1&type=image)
 更新数据可以通过:
 GetLatestData/main.py 直接运行
 一般获取最新时间为used time: 108s.
+
+### 2. 手动删减不需要的图片（可通过data/baike_block_img_list 匹配出）
+- 下载到图片后，需手动删减不需要的文件（留下如下图）
+![](README_md_files/32b528b0-0bdb-11ed-83aa-4564d5d94993.jpeg?v=1&type=image)
+### 空文件夹做无地铁信息的占位符
+- 需运行utils内的check_no_exist_file.py 将不存在的站名新建为空文件夹表明无相关图片。![](README_md_files/2a5e4d40-0bdb-11ed-83aa-4564d5d94993.jpeg?v=1&type=image)
+
+
 ## Line 6
 > 车厢数量：
 > 
