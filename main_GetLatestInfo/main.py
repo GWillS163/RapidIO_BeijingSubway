@@ -2,7 +2,7 @@ import queue
 import threading
 import time
 
-from GetLatestInfo.get_subwayInfo_ByAPI import get_City_subway_info
+from get_subwayInfo_ByAPI import get_City_subway_info
 from get_subwayInfo_by_official import *
 from get_3D_pic import *
 
