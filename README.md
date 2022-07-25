@@ -1,6 +1,29 @@
 # Beijing-Subway-3D
+## 打算解决问题：
+- 用户应急时在地铁站内耗时长，难以找到出站最优解。
 
+- 辅助用户使用3D图的方式加速北京地铁网络的站内换乘。
+- 可以在车厢内提前准备好出站的路线。
 
+![img.png](README_md_files/img.png)
+通过到站查看站内图片，即可快速找到相应出口，从而缩短出站时间。
+
+## 目录介绍
+data : 存放不同时期的数据 (北京地铁线路的时效性)
+
+## 信息采集部分 - 代码原理:
+使用了多线程进行request.get 以及本地保存
+1. 通过官网bjSubway.com 获取 最新的线路及站名
+2. 线程1 req_baike: 通过百度百科获取 相关词条的指定图片url
+3. 线程2 req_pics: 请求图片url,得到图片content
+4. 线程3 save_pics: 保存图片到本地
+5. 线程4 _print: 输出信息
+
+## 代码运行情况
+![img_1.png](README_md_files/img_1.png)
+更新数据可以通过:
+GetLatestData/main.py 直接运行
+一般获取最新时间为used time: 108s.
 ## Line 6
 > 车厢数量：
 > 

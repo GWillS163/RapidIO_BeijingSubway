@@ -36,11 +36,17 @@ def request_img(station_name, img_url):
 
 
 def save_img(path, img_name, img_content):
+    # # if img_content's size is too small, pass it
+    # if len(img_content) < 1024:
+    #     return
+
     # save to station_name folder if not exist new it
     if not os.path.exists(path):
         os.mkdir(path)
-    with open(os.path.join(path, img_name), 'wb') as f:
-        f.write(img_content)
+    # save img to local file if not exist
+    if not os.path.exists(path + img_name):
+        with open(os.path.join(path, img_name), 'wb') as f:
+            f.write(img_content)
 
 if __name__ == '__main__':
     get_img_urls_by_station("北京大学东门站")
