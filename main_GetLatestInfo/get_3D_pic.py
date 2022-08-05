@@ -41,6 +41,8 @@ def save_img(path, img_name, img_content):
     # if len(img_content) < 1024:
     #     return
 
+    if not os.path.exists(path):
+        os.mkdir(path)
     # save img to local file if not exist
     if not os.path.exists(path + img_name):
         with open(os.path.join(path, img_name), 'wb') as f:
