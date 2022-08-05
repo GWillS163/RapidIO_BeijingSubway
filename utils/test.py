@@ -1,19 +1,11 @@
-def mergeSort(arr: list) -> list:
-    if len(arr) < 2:
-        return arr
-    mid = len(arr) // 2
-    left = mergeSort(arr[:mid])
-    right = mergeSort(arr[mid:])
-    return merge(left, right)
 
+# print the list 5 by 5
+def print_list(lst: list) -> None:
+    for i in range(0, len(lst), 5):
+        print(lst[i:i+5])
+    print()
+    return None
 
-def merge(left, right):
-    l_index = 0
-    r_index = 0
-    result = []
-    while left[l_index] and right[r_index]:
-        if left[l_index] < right[r_index]:
-            result.pop(0)
-        else:
-            result.pop(0)
-    return result
+# test above
+if __name__ == '__main__':
+    print_list([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])

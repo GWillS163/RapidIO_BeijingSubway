@@ -2,7 +2,6 @@ import requests
 import os
 import re
 import bs4
-from request_multiProcessing import MyProcess
 
 
 def get_img_urls_by_station(station_name):

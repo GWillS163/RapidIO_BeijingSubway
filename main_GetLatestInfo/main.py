@@ -1,3 +1,4 @@
+import os
 import queue
 import threading
 import time
@@ -5,34 +6,43 @@ from functools import partial
 
 from get_subwayInfo_ByAPI import get_City_subway_info
 from get_subwayInfo_by_official import *
-from get_3D_pic import *
+from get_3D_pic import get_img_urls_by_station, request_img, save_img
 
-req_baike_tasks = queue.Queue()
+from request_multiProcessing import ReqUrlsProcess
+
+# global req_baike_tasks
+# req_baike_tasks = queue.Queue()
 req_pic_tasks = queue.Queue()
 save_tasks = queue.Queue()
 save_info = queue.Queue()
 
-
 # 2. get the latest stations info
-def _get_pic_url():
-    """获得站内图片的urls"""
-    while req_baike_tasks.qsize() > 0:
-        line_name, station_name = req_baike_tasks.get()
-        try:
-            img_urls = get_img_urls_by_station(station_name)
-            staion_folder = os.path.join(save_path, line_name, station_name)
-            if not img_urls and not os.path.exists(staion_folder):
-                os.mkdir(staion_folder)
-            for img_url in img_urls:
-                req_pic_tasks.put([img_url, line_name, station_name])
-        except Exception as e:
-            print(f"Occur {e} during request {line_name} {station_name}\n\n")
-            save_info.put(["reqBkError", line_name, station_name, ""])
-    print("all of get_pic_url tasks done")
+# def _get_pic_url():
+#     """使用最新的进程处理, 获得站内图片的urls"""
+#     while req_baike_tasks.qsize() > 0:
+#         line_name, station_name = req_baike_tasks.get()
+#         try:
+#             img_urls = get_img_urls_by_station(station_name)
+#             staion_folder = os.path.join(save_path, line_name, station_name)
+#             if not img_urls and not os.path.exists(staion_folder):
+#                 os.mkdir(staion_folder)
+#             for img_url in img_urls:
+#                 req_pic_tasks.put([img_url, line_name, station_name])
+#         except Exception as e:
+#             print(f"Occur {e} during request {line_name} {station_name}\n\n")
+#             save_info.put(["reqBkError", line_name, station_name, ""])
+#     print("all of get_pic_url tasks done")
+
+
+# def __get_pic_url_processing():
+#     """新建线程去 获得站内图片的urls"""
+#     while req_baike_tasks.qsize() > 0:
+#         time.sleep(10)
 
 
 def _request_img():
-    while t_req_baike.is_alive():
+    while req_pic_tasks.qsize() > 0:
+    # while t_req_baike.is_alive():
         img_url, line_name, station_name = req_pic_tasks.get()
         try:
             img_name, img_content = request_img(station_name, img_url)
@@ -72,14 +82,15 @@ def _print_task_queue():
         if info != "OK":
             print(f"{info} {line_name} {station_name} {img_name}")
         print(f"\r"
-              f"reqBkTsk:\033[1;36;40m {req_baike_tasks.qsize():5} \033[0m"
+              # f"reqBkTsk:\033[1;36;40m {req_baike_tasks.qsize():5} \033[0m"
               f"reqPicTsk:\033[4;31;40m {req_pic_tasks.qsize():5} \033[0m"
               f"imgSvTsk:\033[1;32;40m {save_tasks.qsize():5}\033[0m"
               f"savedInf:\033[1;43;40m {info}, {line_name:5} {img_name:<30}\033[0m"
               , end="")
 
         time.sleep(0.1)
-        if save_tasks.qsize() == 0 and req_baike_tasks.qsize() == 0 and req_pic_tasks.qsize() == 0:
+        if save_tasks.qsize() == 0 \
+                and req_pic_tasks.qsize() == 0:
             print("all of tasks done")
             break
 
@@ -93,7 +104,34 @@ def get_block_list(blocked_folder):
     return os.listdir(blocked_folder)
 
 
+def get_all_station_info():
+    for line_name in latest_data.keys():
+        # create folder with line name if not exists
+        line_save_path = os.path.join(save_path, line_name)
+        if not os.path.exists(line_save_path):
+            os.mkdir(line_save_path)
+
+        # iterate stations of line. request baidu baike
+        for index in range(0, len(latest_data[line_name]), 5):
+            processingList = []
+            for station_name in latest_data[line_name][index:index+5]:
+                urlsP = ReqUrlsProcess("reqBK", station_name, save_path, line_name)
+                urlsP.start()
+                processingList.append(urlsP)
+                print(f"Put stations in {line_name:10}{station_name}\t start")
+
+            for urlsP in processingList:
+                urlsP.join()
+                print(f"Put stations in {line_name:10}\t done")
+                img_urls = urlsP.get_img_urls()
+                for img in img_urls:
+                    req_pic_tasks.put(img)
+
+    print("all of get_pic_url tasks done")
+
+
 if __name__ == '__main__':
+
     # 用户可更改使用路径
     work_path = '../data/'
     block_list = get_block_list("../data/baike_block_img_list")
@@ -112,22 +150,15 @@ if __name__ == '__main__':
     pprint(latest_data)
 
     # 1. put all stations into get_pic_tasks
-    for line in latest_data.keys():
-        # create folder with line name if not exists
-        line_save_path = os.path.join(save_path, line)
-        if not os.path.exists(line_save_path):
-            os.mkdir(line_save_path)
+    get_all_station_info()
 
-        # iterate stations of line. request baidu baike
-        for station in latest_data[line]:
-            req_baike_tasks.put([line, station])
-        print(f"Put stations in {line:10}\t({len(latest_data[line]):4}) done")
 
-    t_req_baike = threading.Thread(target=_get_pic_url)
+    # t_req_baike = threading.Thread(target=_get_pic_url)
+    # t_req_baike = threading.Thread(target=__get_pic_url_processing)
     t_req_pics = threading.Thread(target=_request_img)
     t_img_save = threading.Thread(target=partial(_save_img, save_path, block_list, save_blocked_folder))
     t_print = threading.Thread(target=_print_task_queue)
-    t_req_baike.start()
+    # t_req_baike.start()
     t_req_pics.start()
     t_img_save.start()
     t_print.start()
