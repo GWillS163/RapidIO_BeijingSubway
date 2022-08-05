@@ -2,11 +2,12 @@ import requests
 import os
 import re
 import bs4
+from request_multiProcessing import MyProcess
 
 
 def get_img_urls_by_station(station_name):
     """
-    下载百度百科图片，并保存到本地
+    获得百度百科图片urls
     例: https://baike.baidu.com/item/人民大学站
     :param station_name:
     :return:
@@ -40,9 +41,6 @@ def save_img(path, img_name, img_content):
     # if len(img_content) < 1024:
     #     return
 
-    # save to station_name folder if not exist new it
-    if not os.path.exists(path):
-        os.mkdir(path)
     # save img to local file if not exist
     if not os.path.exists(path + img_name):
         with open(os.path.join(path, img_name), 'wb') as f:

@@ -22,7 +22,11 @@ def check_no_exist_file(dir, map):
 
 
 if __name__ == '__main__':
-    dir = '../2022-07-25/'
+    dir = '../data/2022-07-25/'
     # map
     from data.completed_map import map
+    # if dir not exist, print error
+    if not os.path.exists(dir):
+        print("dir not exist")
+        exit()
     check_no_exist_file(dir, map)
